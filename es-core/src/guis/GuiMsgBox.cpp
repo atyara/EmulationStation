@@ -8,7 +8,8 @@
 GuiMsgBox::GuiMsgBox(Window* window, const std::string& text,
 	const std::string& name1, const std::function<void()>& func1,
 	const std::string& name2, const std::function<void()>& func2,
-	const std::string& name3, const std::function<void()>& func3) : GuiComponent(window),
+	const std::string& name3, const std::function<void()>& func3,
+	const bool accelerateFirst) : GuiComponent(window),
 	mBackground(window, ":/frame.png"), mGrid(window, Vector2i(1, 2))
 {
 	float width = Renderer::getScreenWidth() * 0.6f; // max width
@@ -20,12 +21,12 @@ GuiMsgBox::GuiMsgBox(Window* window, const std::string& text,
 	// create the buttons
 	mButtons.push_back(std::make_shared<ButtonComponent>(mWindow, name1, name1, std::bind(&GuiMsgBox::deleteMeAndCall, this, func1)));
 	if(!name2.empty())
-		mButtons.push_back(std::make_shared<ButtonComponent>(mWindow, name2, name3, std::bind(&GuiMsgBox::deleteMeAndCall, this, func2)));
+		mButtons.push_back(std::make_shared<ButtonComponent>(mWindow, name2, name2, std::bind(&GuiMsgBox::deleteMeAndCall, this, func2)));
 	if(!name3.empty())
 		mButtons.push_back(std::make_shared<ButtonComponent>(mWindow, name3, name3, std::bind(&GuiMsgBox::deleteMeAndCall, this, func3)));
 
 	// set accelerator automatically (button to press when "b" is pressed)
-	if(mButtons.size() == 1)
+	if(accelerateFirst || mButtons.size() == 1)
 	{
 		mAcceleratorFunc = mButtons.front()->getPressedFunc();
 	}else{
