@@ -39,6 +39,7 @@ namespace Utils
 		bool        isDirectory        (const std::string& _path);
 		bool        isSymlink          (const std::string& _path);
 		bool        isHidden           (const std::string& _path);
+		void        copyFile	       (const std::string& _from, const std::string& _to);
 #if !defined(_WIN32)
 		bool        isExecutable       (const std::string& _path);
 #endif // !_WIN32

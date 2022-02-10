@@ -6,6 +6,7 @@
 #include <string.h>
 #include <map>
 #include <mutex>
+#include <fstream>
 
 #if defined(_WIN32)
 // because windows...
@@ -754,6 +755,16 @@ namespace Utils
 			return false;
 
 		} // isHidden
+
+//////////////////////////////////////////////////////////////////////////
+
+		void copyFile (const std::string& _from, const std::string& _to)
+		{
+			std::ifstream src(_from, std::ios::binary);
+			std::ofstream dst(_to, std::ios::binary);
+
+			dst << src.rdbuf();
+		}
 
 //////////////////////////////////////////////////////////////////////////
 
