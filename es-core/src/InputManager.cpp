@@ -1,5 +1,7 @@
 #include "InputManager.h"
 
+#include "resources/ResourceManager.h"
+#include "guis/GuiMsgBox.h"
 #include "utils/FileSystemUtil.h"
 #include "CECInput.h"
 #include "Log.h"
@@ -502,4 +504,29 @@ std::string InputManager::getDeviceGUIDString(int deviceId)
 	char guid[65];
 	SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(it->second), guid, 65);
 	return std::string(guid);
+}
+
+void InputManager::changeRetroarchControllerProfile(Window *window, const std::function<void()>& callback)
+{
+	auto copy_profile = [](const std::string& profile)
+	{
+		std::string cfgPath = ResourceManager::getInstance()->getResourcePath(profile);
+		Utils::FileSystem::copyFile(cfgPath, "/opt/retropie/configs/all/retroarch.cfg");
+	};
+
+	window->pushGui(new GuiMsgBox(window,
+								  "PLEASE SELECT CONTROLLER PROFILE:\n\nPowered by AndiTech",
+								  "STICKS",[=] {
+									  copy_profile(":/retroarch_sticks.cfg");
+									  if(callback) callback();
+									},
+								  "PADS", [=] {
+									  copy_profile(":/retroarch_pads.cfg");
+									  if(callback) callback();
+									},
+								  "STICKS & PADS", [=] {
+									  copy_profile(":/retroarch_sticks_pads.cfg");
+									  if(callback) callback();
+									},
+								  true));
 }

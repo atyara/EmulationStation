@@ -32,34 +32,6 @@
 
 bool scrape_cmdline = false;
 
-void copyProfiles(Window *window)
-{
-	auto static copy_sticks_profile = []
-	{
-		std::string cfgPath = ResourceManager::getInstance()->getResourcePath(":/retroarch_sticks.cfg");
-		Utils::FileSystem::copyFile(cfgPath, "/opt/retropie/configs/all/retroarch.cfg");
-		ViewController::get()->goToStart();
-	};
-	auto static copy_pads_profile = []
-	{
-		std::string cfgPath = ResourceManager::getInstance()->getResourcePath(":/retroarch_pads.cfg");
-		Utils::FileSystem::copyFile(cfgPath, "/opt/retropie/configs/all/retroarch.cfg");
-		ViewController::get()->goToStart();
-	};
-	auto static copy_sticks_pads_profile = []
-	{
-		std::string cfgPath = ResourceManager::getInstance()->getResourcePath(":/retroarch_sticks_pads.cfg");
-		Utils::FileSystem::copyFile(cfgPath, "/opt/retropie/configs/all/retroarch.cfg");
-		ViewController::get()->goToStart();
-	};
-	window->pushGui(new GuiMsgBox(window,
-								  "Please select controller profile:\n\nPowered by AndiTech",
-								  "Sticks", copy_sticks_profile,
-								  "Pads", copy_pads_profile,
-								  "Sticks & Pads", copy_sticks_pads_profile,
-								  true));
-}
-
 bool parseArgs(int argc, char* argv[])
 {
 	Utils::FileSystem::setExePath(argv[0]);
@@ -409,7 +381,7 @@ int main(int argc, char* argv[])
 	{
 		if(Utils::FileSystem::exists(InputManager::getConfigPath()) && InputManager::getInstance()->getNumConfiguredDevices() > 0)
 		{
-			copyProfiles(&window);
+			ViewController::get()->goToStart();
 		}else{		
 			window.pushGui(new GuiDetectDevice(&window, true, [] { ViewController::get()->goToStart(); }));
 		}

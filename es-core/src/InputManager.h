@@ -5,6 +5,7 @@
 #include <SDL_joystick.h>
 #include <map>
 #include <string>
+#include <functional>
 
 class InputConfig;
 class Window;
@@ -58,6 +59,8 @@ public:
 	InputConfig* getInputConfigByDevice(int deviceId);
 
 	bool parseEvent(const SDL_Event& ev, Window* window);
+
+	static void changeRetroarchControllerProfile(Window* window, const std::function<void()>& callback);
 };
 
 #endif // ES_CORE_INPUT_MANAGER_H
