@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
+# Note: Visual Studio 2022 generator requires CMake 3.21 or greater.
 
 option(GLES "Set to ON if targeting Embedded OpenGL" ${GLES})
 option(GL "Set to ON if targeting Desktop OpenGL" ${GL})
@@ -10,6 +11,9 @@ option(PROFILING "Set to ON to enable profiling" ${PROFILING})
 # GLES implementation overrides
 option(USE_MESA_GLES "Set to ON to select the MESA OpenGL ES driver" ${USE_MESA_GLES})
 option(USE_GLES1 "Set to ON to force usage of the OpenGLES v1 renderer" ${USE_GLES1})
+
+# GL implementation overrides
+option(USE_GL21 "Set to ON to force usage of the OpenGL v2.1 renderer" ${USE_GL21})
 
 # OpenGL library preference (https://cmake.org/cmake/help/git-stage/policy/CMP0072.html)
 # Set it to OLD to appease older proprietary drivers without libglvnd support
@@ -73,7 +77,11 @@ set_property(CACHE GLSystem PROPERTY STRINGS "Desktop OpenGL" "Embedded OpenGL")
 
 if(${GLSystem} MATCHES "Desktop OpenGL")
     find_package(OpenGL REQUIRED)
-    add_definitions(-DUSE_OPENGL_14)
+    if(NOT USE_GL21)
+        add_definitions(-DUSE_OPENGL_14)
+    else()
+        add_definitions(-DUSE_OPENGL_21)
+    endif()
 else()
     if(NOT USE_GLES1)
         find_package(OpenGLES2 QUIET REQUIRED)
@@ -130,8 +138,16 @@ if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
     add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
     add_definitions(-DNOMINMAX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP") #multi-processor compilation
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP") #multi-processor compilation
+
+    # multi-processor compilation
+    # disable warning c4018 - signed/unsigned mismatch
+    # disable warning c4244 - conversion, possible loss of data
+    # disable warning c4996 - use of deprecated function/member/variable/typedef
+    # Use extended ASCII character set
+
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /wd4018 /wd4244 /wd4996 /source-charset:437")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP /wd4018 /wd4244 /wd4996 /source-charset:437")
+    set(CMAKE_EXE_LINKER_FLAGS "/SAFESEH:NO")
 
     # Set the start-up project to in VS to 'emulationstation'
     set(VS_STARTUP_PROJECT "emulationstation")
@@ -231,7 +247,12 @@ endif()
 
 if(MSVC)
     LIST(APPEND COMMON_LIBRARIES
+        Crypt32
+        Imm32
+        Setupapi
+        Version
         winmm
+        Wldap32
     )
 endif()
 
