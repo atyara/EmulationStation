@@ -38,6 +38,9 @@ public:
 	using IList<TextListData, T>::isScrolling;
 	using IList<TextListData, T>::stopScrolling;
 
+	// flag to re-evaluate list cursor position in visible list section
+	static constexpr int REFRESH_LIST_CURSOR_POS = -1;
+
 	TextListComponent(Window* window);
 
 	bool input(InputConfig* config, Input input) override;
@@ -153,10 +156,11 @@ void TextListComponent<T>::render(const Transform4x4f& parentTrans)
 	// number of listentries that can fit on the screen
 	mViewportHeight = (int)(mSize.y() / entrySize);
 
-	if(mViewportTop == -1)
+	if(mViewportTop == REFRESH_LIST_CURSOR_POS)
 	{
-		// returning from screen saver activated game launch
+		// returning from screen saver activated game launch or screensaver press 'A'
 		mViewportTop = mCursor - mViewportHeight/2;
+		mCursorPrev = -1; // reset to pristine to calc viewportTop() right when jumping to game with 'A' pressed
 	}
 	if(mCursor != mCursorPrev)
 	{
@@ -388,6 +392,11 @@ void TextListComponent<T>::onCursorChanged(const CursorState& state)
 template <typename T>
 void TextListComponent<T>::applyTheme(const std::shared_ptr<ThemeData>& theme, const std::string& view, const std::string& element, unsigned int properties)
 {
+	if(Settings::getInstance()->getBool("UseFullscreenPaging"))
+	{
+		mViewportTop = REFRESH_LIST_CURSOR_POS;
+	}
+
 	GuiComponent::applyTheme(theme, view, element, properties);
 
 	const ThemeData::ThemeElement* elem = theme->getElement(view, element, "textlist");
